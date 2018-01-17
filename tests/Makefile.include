@@ -1,0 +1,31 @@
+APPLICATION = unity
+
+BOARD ?= samr21-xpro
+RIOTBASE ?= $(CURDIR)/../../../RIOT
+UNITY_ROOT ?= ~/tools/Unity
+CMOCK_ROOT ?= ~/tools/cmock
+
+QUIET ?= 1
+
+USEMODULE += unity
+USEMODULE += cmock
+USEMODULE += xtimer
+
+CFLAGS += -DDEVELHELP
+
+all: auto_main.c
+
+full-clean: clean
+	@rm -rf main.c
+
+auto_main.c: test_cases.c
+	ruby $(UNITY_ROOT)/auto/generate_test_runner.rb $? $@
+
+mock:
+ifndef CONFIG
+	ruby $(CMOCK_ROOT)/lib/cmock.rb $(HEADER)
+else
+	ruby $(CMOCK_ROOT)/lib/cmock.rb -o$(CONFIG)$(HEADER)
+endif
+
+include $(RIOTBASE)/Makefile.include
